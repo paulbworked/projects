@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Useful OPRA Commands</title>
+</head>
+<body>
+    <h1>Useful OPRA Commands</h1>
+    <h4>Set context to right cluster:</h4>
+    <p>
+        <code>
+            kubectl config use-context aks-opra-dev-ne
+        </code>
+    <h4>To look at pods running, the label shows what version of pod is running:</h4>
+    <p>
+        <code>
+            kubectl get pods -n opra-dev1 -L opra.tritrials.com/version
+        </code>
+    </p>
+     <h4>What resources are being run under a pod/node:</h4>
+    <p>
+        <code>
+            kubectl describe node aks-apopraqual-28135127-vmss000000
+        </code>
+    </p>   
+</body>
+</html>

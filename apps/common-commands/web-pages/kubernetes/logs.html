@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logs Commands</title>
+</head>
+<body>
+    <h1>Logs Commands</h1>
+    <h4>Check logs of pod in namespace:</h4>
+    <p>
+        <code>
+            kubectl logs pgadmin-0 -n dev2-opra<br>
+            kubectl logs -l app.kubernetes.io/name=ingress-nginx -n ingress
+        </code>
+    </p>
+</body>
+</html>

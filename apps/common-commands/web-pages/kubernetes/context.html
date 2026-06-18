@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Context Commands</title>
+</head>
+<body>
+    <h1>Context Commands</h1>
+    <h4>Get or set context of current cluster:</h4>
+    <p>
+        <code>
+            kubectl config current-context<br>
+            kubectl config get-contexts<br>
+            kubectl config set-cluster opra5-aks-06-dev-cluster<br>
+            kubectl config set-context --current --namespace=datadog<br>
+            kubectl config use-context opra5-aks-06-dev-cluster
+        </code>
+    </p>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ingress Commands</title>
+</head>
+<body>
+    <h1>Ingress Commands</h1>
+    <p>
+        Manages external access to services in a cluster, typically HTTP/HTTPS
+    </p>
+    <h4>List all Ingress resources across all namespaces:</h4>
+    <p>
+        <code>
+            kubectl get ing --all-namespaces
+        </code>
+    <h4>Get details of a specific ingress route:</h4>
+    <p>
+        <code>
+            kubectl describe ingress <ingress-name> -n <namespace><br>
+            Kubectl describe ingress autotest-opra | pods behind
+        </code>
+    <h4>get YAML file of the Ingress:</h4>
+    <p>
+        <code>
+            kubectl get ingress dev2-opra-ingress -n dev2-opra -o yaml
+        </code>
+    </p>
+</body>
+</html>

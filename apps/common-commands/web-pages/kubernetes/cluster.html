@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cluster Commands</title>
+</head>
+<body>
+    <h1>Cluster Commands</h1>
+    <h4>Verify that the cluster is running:</h4>
+    <p>
+        <code>
+            kubectl cluster-info
+        </code>
+    <h4>Get or set context of current cluster:</h4>
+    <p>
+        <code>
+            kubectl config current-context<br>
+            kubectl config get-context<br>
+            kubectl config set-cluster opra5-aks-06-dev-cluster<br>
+            kubectl config set-context --current --namespace=datadog
+        </code>
+    </p>
+</body>
+</html>

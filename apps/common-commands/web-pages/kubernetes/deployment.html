@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deployment Commands</title>
+</head>
+<body>
+    <h1>Deployment Commands</h1>
+    <p>
+        Manages ReplicaSets and provides updates to Pods and ReplicaSets
+    </p>
+    <h4>Get details of all deployments:</h4>
+    <p>
+        <code>
+            kubectl get deployments --all-namespace=true
+        </code>
+    <h4>Describe details of a deployment:</h4>
+    <p>
+        <code>
+            kubectl describe deployment ingress-nginx-controller -n ingress
+        </code>
+    </p>
+</body>
+</html>

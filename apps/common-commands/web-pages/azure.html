@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Azure Commands</title>
+  </head>
+  <body>
+    <h1>Azure Commands</h1>
+    <a href="cmds.html">Home</a>
+    <h5>Various Basics:</h5>
+    <p>
+      <code>
+        az login <br />
+        Az account show - show current subscription<br />
+        Az account subscription list - shows all subscriptions in tenant<br />
+        az account set --subscription "subscription ID or name"<br />
+        # get access token for the active subscription<br />
+        az account get-access-token<br />
+        # get access token for a specific subscription<br />
+        az account get-access-token --subscription "subscription ID or name"<br />
+        az config get defaults<br />
+        az config set defaults.group=rg-temp-prod<br />
+        az config set defaults.group= - leave string empty<br />
+        recover failing firewall policy: Get-AzFirewallPolicy -Name
+        "your_resource_name" -ResourceGroupName "your_resource_group_name" |
+        Set-AzFirewallPolicy<br />
+      </code>
+    </p>
+  </body>
+</html>

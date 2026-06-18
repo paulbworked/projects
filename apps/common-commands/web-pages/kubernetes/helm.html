@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helm Commands</title>
+</head>
+<body>
+    <h1>Helm Commands</h1>
+    <h4>List helm chart in a namespace:</h4>
+    <p>
+        <code>
+            helm list -n datadog<br>
+            helm list -n ingress
+        </code>
+    <h4>Uninstall a helm chart in a namespace:</h4>
+    <p>
+        <code>
+            helm uninstall cilium -n example-name
+        </code>
+    <h4>Install Cilium Hubble and logging:</h4>
+    <p>
+        <code>
+            helm upgrade cilium cilium/cilium --version 1.16.4 \<br>
+            --namespace kube-system \<br>
+            --reuse-values \<br>
+            --set hubble.relay.enabled=true \<br>
+            --set hubble.ui.enabled=true \<br>
+            --set hubble.export.static.enabled=true \<br>
+            --set hubble.export.static.filePath=/var/run/cilium/hubble/events.log<br>
+        </code>
+    </p>
+    <p>
+        <code>
+            helm uninstall cilium -n example-name
+        </code>
+    <h4>Update ingress-nginx:</h4>
+    <p>
+        <code>
+            kubectl get pods --all-namespaces --selector app.kubernetes.io/name=ingress-nginx<br>
+            kubectl exec -n ingress-nginx ingress-nginx-controller-5f58c4595b-hsvjx  -- /nginx-ingress-controller --version<br>
+            helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx<br>
+            helm upgrade ingress-nginx ingress-nginx/ingress-nginx --install --namespace ingress-nginx<br>
+        </code>
+    </p>
+</body>
+</html>

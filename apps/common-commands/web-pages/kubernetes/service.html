@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Commands</title>
+</head>
+<body>
+    <h1>Service Commands</h1>
+    <p>
+        Logical set of Pods and a policy for accessing them
+    </p>
+    <h4>Get service information about namespace or service:</h4>
+    <p>
+        <code>
+            kubectl get svc<br>
+            kubectl describe svc<br>
+            kubectl get svc -n datadog<br>
+            kubectl get svc --all-namespaces<br>
+            Kubectl get service | internal load balancer<br>
+            kubectl get service ingress-nginx-controller -n ingress<br>
+            kubectl describe service ingress-nginx-controller -n ingress<br>
+            <br>
+            kubectl get services --namespace ingress-nginx -o wide -w ingress-nginx-controller
+        </code>
+    </p>
+</body>
+</html>

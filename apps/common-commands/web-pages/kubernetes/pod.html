@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pod Commands</title>
+</head>
+<body>
+    <h1>Pod Commands</h1>
+    <p>
+        Pod: Deployable unit, representing one or more containers (a self sufficient software package containing all components to run an application)
+    </p>
+    <h4>List all pods across all namespaces:</h4>
+    <p>
+        <code>
+            kubectl get pod --all-namespaces
+        </code>
+    <h4>Get details of a specific pod:</h4>
+    <p>
+        <code>
+            kubectl get po -n datadog<br>
+            kubectl get pods --namespace=datadog<br>
+            kubectl get pods --namespace=prod-eu-opra<br>
+            kubectl get pods -n opra-clienttest -L opra.tritrials.com/version
+        </code>
+    <h4>Delete pod in namespace (which will restart the pod):</h4>
+    <p>
+        <code>
+            kubectl delete pods datadgog-agent-xxss -n datadog
+        </code>   
+    <h4>Command to find out how many processors a pod is using:</h4>
+    <p>
+        <code>
+            kubectl get pod <pod-name> -o yaml<br>
+            <br>
+            In this example:<br>
+            - The `requests` field specifies the amount of CPU that the container is guaranteed.<br>
+            - The `limits` field specifies the maximum amount of CPU that the container can use.<br>
+            In Kubernetes, CPU resources are measured in millicores (m). So, 1200m means 1200 millicores, which is equivalent to 1.2 CPU cores.<br>
+            1000m = 1 CPU core<br>
+            1200m = 1.2 CPU cores<br>
+            <br>
+            ```yaml<br>
+            apiVersion: v1<br>
+            kind: Pod<br>
+            metadata:<br>
+                name: example-pod<br>
+            spec:<br>
+                containers:<br>
+                - name: example-container<br>
+                image: example-image<br>
+                resources:<br>
+                    requests:<br>
+                    cpu: "500m"  # 0.5 CPU cores<br>
+                    limits:<br>
+                    cpu: "1"     # 1 CPU core<br>
+            ```<br>             
+        </code>    
+    </p>
+    <h4>Command to find out how much memory a pod is using:</h4>
+    <p>
+        Check memory usage:<br>
+        <code>
+            kubectl top pods -n qc-opra <br>
+        </code>
+        <br>
+        Check memory limits:<br>
+        <code>
+            kubectl get pod qc-opra-api-7c777f4956-klv22 --namespace=qc-opra -o yaml <br>
+        </code>  
+        <br>
+        <code>      
+             ```yaml<br>
+             resources:<br>
+                limits:<br>
+                    cpu: 2500m<br>
+                    memory: 18000Mi<br>
+                requests:<br>
+                    cpu: 100m<br>
+                    memory: 1000Mi<br>
+                    <br>
+        </code>    
+        <br>
+        Also check yaml file in azure devops<br>
+    </p>
+        <h4>Scale down web pods to stop users logging in:</h4>
+    <p>
+        <code>
+            kubectl scale deployment opra-web --replicas=1 -n opra-clienttest <br>
+        </code>
+        <br>
+        <code>
+            kubectl scale deployment opra-web --replicas=1 -n opra-sandbox <br>
+        </code>  
+        <br>
+    </p>
+</body>
+</html>

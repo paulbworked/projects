@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PersistentVolume Commands</title>
+</head>
+<body>
+    <h1>PersistentVolume Commands</h1>
+    <p>
+        Storage in a cluster provisioned by an Administrator or dynamically using Storage Classes
+    </p>
+    <h4>List all PersistentVolumeChains (PVC) (dynamic storage) behind all namespaces:</h4>
+    <p>
+        <code>
+            kubectl get pvc --all-namespaces<br>
+            kubectl get pvc -n dev-opra
+        </code>
+    </p>
+</body>
+</html>

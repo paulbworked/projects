@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Powershell Commands</title>
+  </head>
+  <body>
+    <h1>Powershell Commands</h1>
+    <a href="cmds.html">Home</a>
+
+    <h4>Powershell Version:</h4>
+    <p>
+      <code> $PSVersionTable</code>
+    </p>
+
+    <h4>Powershell Core Switch:</h4>
+    <p>
+      <code> pwsh</code>
+    </p>
+
+    <h4>Temporary Add bicep to system path:</h4>
+    <p>
+      <code> $env:Path += ";$env:USERPROFILE\.azure\bin"</code>
+    </p>
+
+    <h4>P2S VPN Gateway Check:</h4>
+    <p>
+      Get-AzP2sVpnGateway -ResourceGroupName "rg-vwan-prod" -Name
+      vpng-p2s-tri-prod-ne<br />
+      Get-AzP2sVpnGatewayConnectionHealth -ResourceGroupName "rg-vwan-prod"
+      -Name vpng-p2s-tri-prod-ne<br />
+      $Gateway = Get-AzP2sVpnGateway -Name "vpng-p2s-tri-prod-ne"
+      -ResourceGroupName "rg-vwan-prod" \ Reset-AzP2sVpnGateway -P2SVpnGateway
+      $Gateway<br />
+    </p>
+  </body>
+</html>

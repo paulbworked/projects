@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bicep Commands</title>
+</head>
+<body>
+    <h1>Bicep Commands</h1>
+    <a href="cmds.html">Home</a>
+    <h5>Various Deployment Basics:</h5>
+    <p>
+        <code>
+            az configure --defaults group="[sandbox resource group name]"<br>
+            az deployment group create --name BicepStorageDeployment --resource-group <YourResourceGroupName> --template-file ./storage.bicep<br>
+            az deployment group what-if --resource-group rg-bicepinfra-pab-poc --template-file ./main.bicep<br>    
+        </code>
+    </p>
+
+    <h5>Various Deployment Examples:</h5>
+    <p>
+        <code>
+            New-AzResourceGroupDeployment -Name <deployment-name> -ResourceGroupName <resource-group-name> -TemplateFile <path-to-bicep-file> -TemplateParameterFile <path-to-parameters-file>
+            az deployment group create --name InitialBicepDeployment --resource-group rg-bicepinfra-pab-poc --template-file ./main.bicep --parameters storageAccountName=uniquestorage001<br>
+            az deployment group what-if --resource-group rg-bicepinfra-pab-poc --template-file ./main.bicep<br>
+            az deployment group create --resource-group rg-bicepinfra-pab-poc --template-file ./main.bicep --confirm-with-what-if<br>
+            az deployment group create --resource-group rg-bicepinfra-pab-poc --template-file ./main.bicep --parameters environmentType=nonprod --confirm-with-what-if<br>
+            az deployment group create --resource-group rg-bicepinfra-pab-poc --template-file ./main.bicep --parameters environmentType=nonprod --confirm-with-what-if<br>
+            az deployment group create --resource-group rg-bicepinfra-pab-poc --template-file ./main.bicep --parameters environmentType=nonprod --confirm-with-what-if<br>
+            az deployment group create --resource-group rg-bicepinfra-pab-poc --name main --template-file main.bicep --parameters main.parameters.dev.json --confirm-with-what-if<br>
+            az deployment group create --name main --template-file main.bicep --parameters environmentName=Production location=westus3<br>
+            az deployment group create --resource-group rg-bicepinfra-pab-poc --template-file main.bicep --parameters location=westus3 --confirm-with-what-if<br>
+            az deployment group create --resource-group rg-bicepinfra-pab-poc --template-file main.bicep --parameters environmentName=Production location=westus3 --confirm-with-what-if<br>
+            az deployment group create --resource-group rg-bicepinfra-pab-poc --name main --template-file main.bicep --confirm-with-what-if<br>
+            az deployment group create --resource-group rg-bicepinfra-pab-poc --name main --template-file main.bicep --confirm-with-what-if<br>
+        </code>
+    </p>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Namepace Commands</title>
+</head>
+<body>
+    <h1>Namespace Commands</h1>
+    <p>
+        Divides cluster resources between multiple users
+    </p>
+    <h4>Create a namespace:</h4>
+    <p>
+        <code>
+            kubectl create namespace datadog
+        </code>
+    <h4>Get a list of all roles behind all namespaces:</h4>
+    <p>
+        <code>
+            kubectl get roles --all-namespaces
+        </code>
+    <h4>Create secret in namespace:</h4>
+    <p>
+        <code>
+            This example is creating a secret holding the API key for Datadog to go with install of Datadog agent via Helm<br>
+            <br>
+            kubectl create secret generic datadog-secret --from-literal api-key=xxx -n datadog
+        </code>
+    <h4>Delete namespace:</h4>
+    <p>
+        <code>
+            kubectl delete ns cilium-test
+        </code>       
+    </p>
+</body>
+</html>

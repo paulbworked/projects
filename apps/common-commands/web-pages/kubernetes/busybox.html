@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BusyBox Commands</title>
+</head>
+<body>
+    <h1>BusyBox Commands</h1>
+    <h4>Run BusyBox & network commands:</h4>
+
+    <a href="https://medium.com/@pczarkowski/kubernetes-tip-run-an-interactive-pod-d701766a12"target="_blank">Kubernetes Tip: Run an interactive pod</a><br>
+
+    <p>
+        <code>
+            kubectl run -i --tty --rm debug --image=busybox --restart=Never -- sh<br>
+            nslookup kv-opra-ops-ne.vault.azure.net<br>
+            nslookup triopsprodnesa.blob.core.windows.net<br>
+            ping vmsftpdevne.tritrials.internal<br>
+            nslookup www.google.com<br>
+            wget www.google.com<br>
+        </code>
+    </p>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Node Commands</title>
+</head>
+<body>
+    <h1>Node Commands</h1>
+    <p>
+        Node: A machine serving as worker in Kubernetes
+    </p>
+    <p>At its core, Kubernetes is a distributed system which means it manages a containerized environment over one or more machines, known as nodes. 
+        So a node is essentially a virtual machines (VMs) where the applications packaged into containers (referred to as Pods) reside. 
+        These nodes reside within Azure's virtual networks. Therefore the underlying hardware is that of Azure's datacenters.
+        AKS supports various VM sizes, allowing us to choose the appropriate hardware based on the workload requirements (e.g., CPU, memory, GPU).
+        We have control over the size and type of VMs used for nodes.
+        And Node pools can be configured to use different VM sizes, enabling us to optimize resource utilization for different applications.
+        Fundamentally the node is the virtual machine where containers (Pods) reside, and if there are multiple containers (Pods) working on a node, then at some point that node will have performance issues, whether that be CPU or memory.
+    </p>
+    <h4>Get details of the nodes running:</h4>
+    <p>
+        <code>
+            kubectl get nodes</br>
+            kubectl get nodes --watch
+        </code>
+    <h4>Get more details of nodes:</h4>
+    <p>
+        <code>
+            kubectl describe no
+        </code>
+    </p>
+</body>
+</html>

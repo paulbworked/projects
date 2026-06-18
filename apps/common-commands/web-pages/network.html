@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Network Commands</title>
+  </head>
+  <body>
+    <h1>Network Commands</h1>
+    <a href="cmds.html">Home</a>
+    <h4>Various Powershell networking commands:</h4>
+    <p>
+      <code>
+        Resolve-DnsName vmdnsne.tritrials.internal -DnsOnly<br />
+        Resolve-DnsName -Name triagentssa.blob.core.windows.net -DnsOnly<br />
+        Resolve-DnsName -Name kv-tri-ops-ne.vault.azure.net -DnsOnly<br />
+        Resolve-DnsName -Name
+        aks-opra01-poc-dns-xuu1jdei.525c06dd-1796-4a3e-94d6-40477b770213.northeurope.azmk8s.io
+        -DnsOnly<br />
+        Resolve-DnsName -Name
+        aks-opra-dev-ne-t74dm2oi.privatelink.northeurope.azmk8s.io -DnsOnly<br />
+        Resolve-DnsName -Name
+        aks-opra-dev-ne-kgbb6k6p.privatelink.northeurope.azmk8s.io -DnsOnly
+        -Server 10.0.4.68<br />
+        Resolve-DnsName -Name
+        aks-opra-dev-ne-kgbb6k6p.privatelink.northeurope.azmk8s.io -DnsOnly
+        -Server 10.0.9.68<br />
+        ping vmdnsne.tritrials.internal<br />
+        ping satripoc.blob.core.windows.net (no response as expected)<br />
+        ping kv-tripoc-prod.vault.azure.net (no response as expected)<br />
+        Test-NetConnection -ComputerName trisftppocne.file.core.windows.net
+        -Port 445<br />
+        getent hosts kv-opra-dev1-ne.privatelink.vaultcore.azure.net
+      </code>
+    </p>
+
+    <p></p>
+
+    <h4>PSPing:</h4>
+    <p>
+      Will need to download the
+      <a href="https://learn.microsoft.com/en-us/sysinternals/downloads/psping"
+        >sysinternals</a
+      >
+      tools and run locally <br />
+      <code> psping kv-tri-ops-ne.vault.azure.net:443 </code>
+    </p>
+
+    <h4>Test URL and TLS on storage accounts:</h4>
+    <p>
+      <code>
+        curl -v https://opra5aks02valeustorage.blob.core.windows.net
+        --tlsv1.2<br />
+        curl -v https://triopsprodnesa.blob.core.windows.net --tlsv1.2<br />
+        curl -v triopsprodnesa.blob.core.windows.net --tlsv1.2<br />
+        curl -v https://opra5aks02valeustorage.blob.core.windows.net --tlsv1.2
+      </code>
+    </p>
+
+    <h4>Establish SSL connection to a storage account:</h4>
+    <p>
+      <code>
+        openssl s_client -connect sacloudshellpabdev.blob.core.windows.net:443
+      </code>
+    </p>
+  </body>
+</html>
