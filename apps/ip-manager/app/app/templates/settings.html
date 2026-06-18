@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Address Space — IP Manager{% endblock %}
+
+{% block content %}
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+  <div>
+    <div style="font-size:20px;font-weight:600;color:#1a1a2e">Address Space</div>
+    <div style="font-size:13px;color:#6c757d;margin-top:2px">Configure your master address space CIDR blocks</div>
+  </div>
+  <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Back to dashboard</a>
+</div>
+
+<div class="card" style="max-width:700px">
+  <div class="card-header">
+    <div class="card-title">Master CIDR blocks</div>
+  </div>
+  <div class="card-body">
+    <p style="font-size:13px;color:#6c757d;margin-bottom:1rem">
+      Add the top-level IP ranges your organisation uses. The free space page will show what is unallocated within each block across all VNets.
+    </p>
+
+    <!-- Add form -->
+    <form method="POST" action="{{ url_for('main.add_master_cidr') }}" style="display:flex;gap:8px;margin-bottom:1.5rem;flex-wrap:wrap">
+      <div class="form-field" style="flex:1;min-width:140px">
+        <input type="text" name="cidr" class="form-control" placeholder="e.g. 10.0.0.0/8" required />
+      </div>
+      <div class="form-field" style="flex:2;min-width:180px">
+        <input type="text" name="label" class="form-control" placeholder="Label (optional, e.g. RFC1918 Class A)" />
+      </div>
+      <button type="submit" class="btn btn-primary">Add block</button>
+    </form>
+
+    <!-- Existing blocks -->
+    {% if master_cidrs %}
+    <table>
+      <thead>
+        <tr>
+          <th>CIDR</th>
+          <th>Label</th>
+          <th>Total IPs</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for mc in master_cidrs %}
+        <tr>
+          <td class="mono">{{ mc.cidr }}</td>
+          <td style="color:#6c757d">{{ mc.label or '—' }}</td>
+          <td class="mono" style="color:#6c757d">
+            {% set prefix = mc.cidr.split('/')[1]|int %}
+            {{ (2 ** (32 - prefix))|int }}
+          </td>
+          <td>
+            <form method="POST" action="{{ url_for('main.delete_master_cidr', id=mc.id) }}" style="display:inline" onsubmit="return confirm('Remove this CIDR block?')">
+              <button class="btn btn-danger btn-sm">Remove</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="text-align:center;color:#6c757d;font-size:13px;padding:1.5rem 0">
+      No master CIDR blocks defined yet. Add one above.
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

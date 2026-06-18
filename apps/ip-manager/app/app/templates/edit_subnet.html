@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Edit Subnet — IP Manager{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:700px">
+  <div class="card-header">
+    <div class="card-title">Edit Subnet — {{ subnet.name }}</div>
+  </div>
+  <div class="card-body">
+    <form method="POST">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Status</label>
+          <select name="status" class="form-control">
+            <option value="free"     {{ 'selected' if subnet.status == 'free' }}>free</option>
+            <option value="reserved" {{ 'selected' if subnet.status == 'reserved' }}>reserved</option>
+            <option value="assigned" {{ 'selected' if subnet.status == 'assigned' }}>assigned</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Environment</label>
+          <select name="environment" class="form-control">
+            <option value=""     {{ 'selected' if not subnet.environment }}>— none —</option>
+            <option value="ops"  {{ 'selected' if subnet.environment == 'ops' }}>ops</option>
+            <option value="prod" {{ 'selected' if subnet.environment == 'prod' }}>prod</option>
+            <option value="dev"  {{ 'selected' if subnet.environment == 'dev' }}>dev</option>
+            <option value="unq"  {{ 'selected' if subnet.environment == 'unq' }}>unq</option>
+            <option value="qual" {{ 'selected' if subnet.environment == 'qual' }}>qual</option>
+            <option value="val"  {{ 'selected' if subnet.environment == 'val' }}>val</option>
+            <option value="dr"   {{ 'selected' if subnet.environment == 'dr' }}>dr</option>
+            <option value="poc"  {{ 'selected' if subnet.environment == 'poc' }}>poc</option>
+            <option value="nonprod" {{ 'selected' if subnet.environment == 'nonprod' }}>nonprod</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Allocated to</label>
+          <input type="text" name="allocated_to" class="form-control" value="{{ subnet.allocated_to or '' }}" placeholder="AKS, App Service…" />
+        </div>
+        <div class="form-group">
+          <label>Purpose</label>
+          <input type="text" name="purpose" class="form-control" value="{{ subnet.purpose or '' }}" placeholder="Private endpoints, ingress…" />
+        </div>
+        <div class="form-group">
+          <label>Service</label>
+          <input type="text" name="service" class="form-control" value="{{ subnet.service or '' }}" placeholder="e.g. Operations, Axion, OPRA" />
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save changes</button>
+        <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

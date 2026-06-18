@@ -1,0 +1,100 @@
+{% extends "base.html" %} {% block title %}Add Subnet — IP Manager{% endblock %}
+{% block content %}
+<div class="card" style="max-width: 700px">
+  <div class="card-header">
+    <div class="card-title">Add Subnet</div>
+  </div>
+  <div class="card-body">
+    <form method="POST">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Subnet name</label>
+          <input
+            type="text"
+            name="name"
+            class="form-control"
+            placeholder="snet-app"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label>CIDR</label>
+          <input
+            type="text"
+            name="cidr"
+            class="form-control"
+            placeholder="10.1.1.0/24"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select name="status" class="form-control">
+            <option value="free">free</option>
+            <option value="reserved">reserved</option>
+            <option value="assigned">assigned</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Environment</label>
+          <select name="environment" class="form-control">
+            <option value="">— none —</option>
+            <option value="ops">ops</option>
+            <option value="prod">prod</option>
+            <option value="dev">dev</option>
+            <option value="unq">unq</option>
+            <option value="qual">qual</option>
+            <option value="val">val</option>
+            <option value="dr">dr</option>
+            <option value="poc">poc</option>
+            <option value="nonprod">nonprod</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Allocated to</label>
+          <input
+            type="text"
+            name="allocated_to"
+            class="form-control"
+            placeholder="AKS, App Service…"
+          />
+        </div>
+        <div class="form-group">
+          <label>Purpose</label>
+          <input
+            type="text"
+            name="purpose"
+            class="form-control"
+            placeholder="Private endpoints, ingress…"
+          />
+        </div>
+        <div class="form-group">
+          <label>Service</label>
+          <input
+            type="text"
+            name="service"
+            class="form-control"
+            placeholder="e.g. Operations, Axion, OPRA"
+          />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Virtual Network</label>
+        <select name="vnet_id" class="form-control" required>
+          {% for vnet in vnets %}
+          <option value="{{ vnet.id }}">
+            {{ vnet.name }} ({{ vnet.cidr }})
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Add Subnet</button>
+        <a href="{{ url_for('main.index') }}" class="btn btn-secondary"
+          >Cancel</a
+        >
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

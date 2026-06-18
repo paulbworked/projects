@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Free Address Space — IP Manager{% endblock %}
+
+{% block content %}
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+  <div>
+    <div style="font-size:20px;font-weight:600;color:#1a1a2e">Free Address Space</div>
+    <div style="font-size:13px;color:#6c757d;margin-top:2px">Unallocated ranges across your network</div>
+  </div>
+  <div style="display:flex;gap:8px">
+    <a href="{{ url_for('main.settings') }}" class="btn btn-secondary">Address Space</a>
+    <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Back to dashboard</a>
+  </div>
+</div>
+
+<!-- Master CIDR free space -->
+{% if master_free %}
+  <div class="section-title">Unallocated ranges within master CIDR blocks</div>
+  {% for item in master_free %}
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-header">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="mono" style="font-size:14px;font-weight:500">{{ item.master.cidr }}</span>
+        {% if item.master.label %}
+          <span style="color:#6c757d;font-size:13px">{{ item.master.label }}</span>
+        {% endif %}
+      </div>
+    </div>
+    <div style="padding:1rem 1.25rem">
+      {% if item.free_ranges %}
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          {% for range in item.free_ranges %}
+            <span style="font-family:'Cascadia Code','Courier New',monospace;font-size:12px;background:#f0fff4;color:#155724;border:1px solid #c3e6cb;padding:4px 10px;border-radius:6px">
+              {{ range }}
+            </span>
+          {% endfor %}
+        </div>
+      {% else %}
+        <span style="color:#6c757d;font-size:13px">No free ranges — entire block is allocated to VNets</span>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+{% else %}
+  <div class="card" style="margin-bottom:1.5rem">
+    <div class="card-body" style="text-align:center;color:#6c757d;padding:1.5rem">
+      No master CIDR blocks configured. <a href="{{ url_for('main.settings') }}">Add one in Address Space</a> to see top-level free space.
+    </div>
+  </div>
+{% endif %}
+
+<!-- Per-VNet free space -->
+<div class="section-title" style="margin-top:1rem">Unallocated subnet ranges within each VNet</div>
+
+{% if results %}
+  {% for result in results %}
+  <div class="card" style="margin-bottom:1.5rem">
+
+    <div class="card-header">
+      <div>
+        <strong style="font-size:15px">{{ result.space.name }}</strong>
+        {% if result.space.description %}
+          <span style="color:#6c757d;font-size:12px;margin-left:10px">{{ result.space.description }}</span>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if result.vnet_details %}
+      {% for detail in result.vnet_details %}
+      <div style="padding:1rem 1.25rem;border-bottom:1px solid #f0f0f0">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:.75rem;flex-wrap:wrap">
+          <span style="font-weight:500;font-size:13px">{{ detail.vnet.name }}</span>
+          {% for c in detail.vnet.cidrs %}
+            <span class="mono" style="color:#6c757d;font-size:12px">{{ c.cidr }}</span>
+          {% endfor %}
+          <span class="badge badge-{{ detail.vnet.resource_type|lower }}">{{ detail.vnet.resource_type }}</span>
+          <span class="badge badge-{{ detail.vnet.environment|lower }}">{{ detail.vnet.environment }}</span>
+          {% if detail.vnet.service %}
+            <span class="badge badge-service">{{ detail.vnet.service }}</span>
+          {% endif %}
+        </div>
+        {% if detail.free_ranges %}
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            {% for range in detail.free_ranges %}
+              <span style="font-family:'Cascadia Code','Courier New',monospace;font-size:12px;background:#f0fff4;color:#155724;border:1px solid #c3e6cb;padding:4px 10px;border-radius:6px">
+                {{ range }}
+              </span>
+            {% endfor %}
+          </div>
+        {% else %}
+          <span style="color:#6c757d;font-size:13px">No free ranges — VNet is fully subnetted</span>
+        {% endif %}
+      </div>
+      {% endfor %}
+    {% else %}
+      <div style="padding:1rem 1.25rem;color:#6c757d;font-size:13px">
+        No VNets defined under this address space yet.
+      </div>
+    {% endif %}
+
+  </div>
+  {% endfor %}
+{% else %}
+  <div class="card">
+    <div class="card-body" style="text-align:center;padding:3rem;color:#6c757d">
+      No address spaces defined yet. <a href="{{ url_for('main.add_address_space') }}">Add one</a> to get started.
+    </div>
+  </div>
+{% endif %}
+
+{% endblock %}

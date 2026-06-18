@@ -1,0 +1,28 @@
+trigger: none
+
+pool:
+  name: OPRA Linux Build Agent Scale Set GF
+
+steps:
+  - script: |
+      python3 --version
+      python3 -m venv venv
+      source venv/bin/activate
+      pip install --upgrade pip
+      pip install -r requirements.txt
+    displayName: Install dependencies
+
+  - task: ArchiveFiles@2
+    displayName: Zip app code
+    inputs:
+      rootFolderOrFile: $(System.DefaultWorkingDirectory)
+      includeRootFolder: false
+      archiveFile: $(Build.ArtifactStagingDirectory)/app.zip
+
+  - task: AzureWebApp@1
+    displayName: Deploy to App Service
+    inputs:
+      azureSubscription: opra-ops-service
+      appName: app-ipmanager-ops
+      appType: webAppLinux
+      package: $(Build.ArtifactStagingDirectory)/app.zip

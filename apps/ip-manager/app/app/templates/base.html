@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}IP Manager{% endblock %}</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Segoe UI", system-ui, sans-serif;
+        background: #f4f6f9;
+        color: #1a1a2e;
+        font-size: 14px;
+      }
+
+      .navbar {
+        background: #0078d4;
+        color: white;
+        padding: 0.875rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      }
+      .navbar-brand {
+        font-size: 16px;
+        font-weight: 600;
+        color: white;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .navbar-brand span {
+        opacity: 0.8;
+        font-weight: 400;
+        font-size: 13px;
+      }
+      .navbar-links {
+        display: flex;
+        gap: 6px;
+      }
+      .navbar-links a {
+        color: rgba(255, 255, 255, 0.85);
+        text-decoration: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        transition: background 0.15s;
+      }
+      .navbar-links a:hover {
+        background: rgba(255, 255, 255, 0.15);
+        color: white;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 1.5rem;
+      }
+
+      .alerts {
+        margin-bottom: 1rem;
+      }
+      .alert {
+        padding: 0.75rem 1rem;
+        border-radius: 6px;
+        margin-bottom: 8px;
+        font-size: 13px;
+      }
+      .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+      .alert-error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+
+      .card {
+        background: white;
+        border: 1px solid #e1e4e8;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        overflow: hidden;
+      }
+      .card-header {
+        padding: 0.875rem 1.25rem;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e1e4e8;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .card-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1a1a2e;
+      }
+      .card-body {
+        padding: 1.25rem;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 12px;
+        margin-bottom: 1.5rem;
+      }
+      .stat-card {
+        background: white;
+        border: 1px solid #e1e4e8;
+        border-radius: 8px;
+        padding: 1rem 1.25rem;
+      }
+      .stat-label {
+        font-size: 11px;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 6px;
+      }
+      .stat-value {
+        font-size: 28px;
+        font-weight: 600;
+        color: #0078d4;
+      }
+      .stat-sub {
+        font-size: 11px;
+        color: #6c757d;
+        margin-top: 2px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      th {
+        font-size: 11px;
+        font-weight: 600;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 8px 12px;
+        text-align: left;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e1e4e8;
+      }
+      td {
+        padding: 10px 12px;
+        border-bottom: 1px solid #f0f0f0;
+        vertical-align: middle;
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+      tr:hover td {
+        background: #f8f9fa;
+      }
+
+      .badge {
+        display: inline-block;
+        font-size: 10px;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: 999px;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+      }
+      .badge-assigned {
+        background: #d4edda;
+        color: #155724;
+      }
+      .badge-reserved {
+        background: #fff3cd;
+        color: #856404;
+      }
+      .badge-free {
+        background: #e2e3e5;
+        color: #495057;
+      }
+      .badge-vnet {
+        background: #cce5ff;
+        color: #004085;
+      }
+      .badge-vwan {
+        background: #e2d9f3;
+        color: #4a235a;
+      }
+      .badge-vpn {
+        background: #fde8d8;
+        color: #7d3c0a;
+      }
+      .badge-prod {
+        background: #f8d7da;
+        color: #721c24;
+      }
+      .badge-dev {
+        background: #d4edda;
+        color: #155724;
+      }
+      .badge-ops {
+        background: #cce5ff;
+        color: #004085;
+      }
+      .badge-unq {
+        background: #e8d5f5;
+        color: #5a1f8a;
+      }
+      .badge-qual {
+        background: #fde8d8;
+        color: #7d3c0a;
+      }
+      .badge-val {
+        background: #d5f0e8;
+        color: #1a6b3c;
+      }
+      .badge-dr {
+        background: #f8d7da;
+        color: #721c24;
+      }
+      .badge-poc {
+        background: #d1ecf1;
+        color: #0c5460;
+      }
+      .badge-service {
+        background: #e8ecf4;
+        color: #1a1a2e;
+      }
+      .badge-nonprod {
+        background: #fde8d8;
+        color: #7d3c0a;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 7px 14px;
+        border-radius: 6px;
+        border: 1px solid transparent;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        font-family: inherit;
+        transition: all 0.15s;
+      }
+      .btn-primary {
+        background: #0078d4;
+        color: white;
+        border-color: #0078d4;
+      }
+      .btn-primary:hover {
+        background: #005fa3;
+      }
+      .btn-secondary {
+        background: white;
+        color: #1a1a2e;
+        border-color: #d0d7de;
+      }
+      .btn-secondary:hover {
+        background: #f6f8fa;
+      }
+      .btn-danger {
+        background: white;
+        color: #dc3545;
+        border-color: #dc3545;
+      }
+      .btn-danger:hover {
+        background: #dc3545;
+        color: white;
+      }
+      .btn-success {
+        background: #28a745;
+        color: white;
+        border-color: #28a745;
+      }
+      .btn-success:hover {
+        background: #1e7e34;
+      }
+      .btn-sm {
+        padding: 4px 10px;
+        font-size: 12px;
+      }
+
+      .form-group {
+        margin-bottom: 1rem;
+      }
+      .form-group label {
+        display: block;
+        font-size: 12px;
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 5px;
+      }
+      .form-control {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #d0d7de;
+        border-radius: 6px;
+        font-size: 13px;
+        font-family: inherit;
+        color: #1a1a2e;
+        background: white;
+        transition: border-color 0.15s;
+      }
+      .form-control:focus {
+        outline: none;
+        border-color: #0078d4;
+        box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.1);
+      }
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+      }
+      .form-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 1.5rem;
+      }
+
+      .mono {
+        font-family: "Cascadia Code", "Courier New", monospace;
+        font-size: 12px;
+      }
+
+      .section-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #495057;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.75rem;
+      }
+
+      .collapse-toggle {
+        cursor: pointer;
+        user-select: none;
+      }
+      .collapse-toggle::before {
+        content: "▶";
+        font-size: 10px;
+        margin-right: 8px;
+        display: inline-block;
+        transition: transform 0.2s;
+      }
+      .collapse-toggle.open::before {
+        transform: rotate(90deg);
+      }
+      .collapse-content {
+        display: none;
+      }
+      .collapse-content.open {
+        display: block;
+      }
+
+      .free-row td {
+        background: #f0fff4;
+      }
+      .free-row:hover td {
+        background: #e6ffed;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar">
+      <a href="{{ url_for('main.index') }}" class="navbar-brand">
+        &#x1F5A7; IP Manager <span>Azure Network</span>
+      </a>
+      <div class="navbar-links">
+        <a href="{{ url_for('main.index') }}">Dashboard</a>
+        <a href="{{ url_for('main.free_space') }}">Free Space</a>
+        <a href="{{ url_for('main.settings') }}">Address Space</a>
+        <a href="{{ url_for('main.add_address_space') }}">+ Core Network</a>
+        <a href="{{ url_for('main.add_vnet') }}">+ VNet</a>
+        <a href="{{ url_for('main.add_vpn') }}">+ VPN</a>
+        <a href="{{ url_for('main.add_vwan') }}">+ vWAN</a>
+        <a href="{{ url_for('main.add_subnet') }}">+ Subnet</a>
+        <a href="{{ url_for('main.add_ip') }}">+ Internal IP</a>
+        <a href="{{ url_for('main.add_firewall_ip') }}">+ Firewall IP</a>
+      </div>
+      <div>
+        <input
+          type="text"
+          id="global-search"
+          placeholder="Search CIDRs, names, IPs…"
+          style="
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: none;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            font-size: 13px;
+            width: 220px;
+            font-family: var(--font-sans);
+          "
+          oninput="globalSearch(this.value)"
+        />
+      </div>
+    </nav>
+
+    <div class="container">
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %}
+      <div class="alerts">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %} {% endwith %} {% block content %}{% endblock %}
+    </div>
+
+    <script>
+      // Collapsible sections
+      document.querySelectorAll(".collapse-toggle").forEach((toggle) => {
+        toggle.addEventListener("click", () => {
+          toggle.classList.toggle("open");
+          const target = document.getElementById(toggle.dataset.target);
+          if (target) target.classList.toggle("open");
+        });
+      });
+
+      // Global search
+      function globalSearch(query) {
+        const q = query.toLowerCase().trim();
+
+        // Search table rows
+        document.querySelectorAll("table tbody tr").forEach((row) => {
+          const text = row.innerText.toLowerCase();
+          row.style.display = !q || text.includes(q) ? "" : "none";
+        });
+
+        // Show/hide VNet rows based on content match
+        document.querySelectorAll('div[id^="vnet-"]').forEach((vnetContent) => {
+          const vnetRow = vnetContent.previousElementSibling;
+          if (!vnetRow) return;
+          const text = (
+            vnetRow.innerText + vnetContent.innerText
+          ).toLowerCase();
+          const container = vnetRow.parentElement;
+          if (container)
+            container.style.display = !q || text.includes(q) ? "" : "none";
+        });
+
+        // Show/hide address space cards
+        document.querySelectorAll(".card").forEach((card) => {
+          const text = card.innerText.toLowerCase();
+          card.style.display = !q || text.includes(q) ? "" : "none";
+        });
+      }
+    </script>
+  </body>
+</html>

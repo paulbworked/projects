@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — IP Manager{% endblock %}
+
+{% block content %}
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-label">Address Spaces</div>
+    <div class="stat-value">{{ address_spaces|length }}</div>
+    <div class="stat-sub">root allocations</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Virtual Networks</div>
+    <div class="stat-value">{{ total_vnets }}</div>
+    <div class="stat-sub">VNet / vWAN / VPN</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Total Subnets</div>
+    <div class="stat-value">{{ total_subnets }}</div>
+    <div class="stat-sub">across all VNets</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Free Subnets</div>
+    <div class="stat-value" style="color:#28a745">{{ free_subnets }}</div>
+    <div class="stat-sub">available to allocate</div>
+  </div>
+</div>
+
+<div class="section-title">Core Network</div>
+
+{% if address_spaces %}
+  {% for space in address_spaces %}
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <span class="collapse-toggle open" data-target="space-{{ space.id }}">
+          <strong>{{ space.name }}</strong>
+        </span>
+        {% if space.description %}
+          <span style="color:#6c757d;font-size:12px;margin-left:10px">{{ space.description }}</span>
+        {% endif %}
+      </div>
+      <div style="display:flex;gap:6px">
+        <a href="{{ url_for('main.add_vnet') }}" class="btn btn-secondary btn-sm">+ VNet</a>
+        <a href="{{ url_for('main.edit_address_space', id=space.id) }}" class="btn btn-secondary btn-sm">Edit</a>
+        <form method="POST" action="{{ url_for('main.delete_address_space', id=space.id) }}" style="display:inline" onsubmit="return confirm('Remove this address space and all its VNets?')">
+          <button class="btn btn-danger btn-sm">Remove</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="collapse-content open" id="space-{{ space.id }}">
+      {% if space.vnets %}
+        {% for vnet in space.vnets %}
+        <div style="border-bottom:1px solid #e1e4e8">
+          <div style="padding:.75rem 1.25rem;background:#fafbfc;display:flex;align-items:center;gap:10px">
+            <span class="collapse-toggle open" data-target="vnet-{{ vnet.id }}" style="font-weight:500">{{ vnet.name }}</span>
+            {% for c in vnet.cidrs %}
+              <span class="mono" style="color:#6c757d;font-size:12px">{{ c.cidr }}</span>
+            {% endfor %}
+            <span class="badge badge-{{ vnet.resource_type|lower }}">{{ vnet.resource_type }}</span>
+            <span class="badge badge-{{ vnet.environment|lower }}">{{ vnet.environment }}</span>
+            {% if vnet.service %}
+              <span class="badge badge-service">{{ vnet.service }}</span>
+            {% endif %}
+            {% if vnet.region %}
+              <span style="color:#6c757d;font-size:12px">{{ vnet.region }}</span>
+            {% endif %}
+            <div style="margin-left:auto;display:flex;gap:6px">
+              <a href="{{ url_for('main.add_subnet') }}" class="btn btn-secondary btn-sm">+ Subnet</a>
+              <form method="POST" action="{{ url_for('main.delete_vnet', id=vnet.id) }}" style="display:inline" onsubmit="return confirm('Remove this VNet and all its subnets?')">
+                <button class="btn btn-danger btn-sm">Remove</button>
+              </form>
+            </div>
+          </div>
+
+          <div class="collapse-content open" id="vnet-{{ vnet.id }}">
+            {% if vnet.subnets %}
+            <table>
+              <thead>
+                <tr>
+                  <th>Subnet name</th>
+                  <th>CIDR</th>
+                  <th>Status</th>
+                  <th>Allocated to</th>
+                  <th>Purpose</th>
+                  <th>Env</th>
+                  <th>Service</th>
+                  <th>IPs</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for subnet in vnet.subnets %}
+                <tr class="{{ 'free-row' if subnet.status == 'free' else '' }}">
+                  <td class="mono">{{ subnet.name }}</td>
+                  <td class="mono">{{ subnet.cidr }}</td>
+                  <td><span class="badge badge-{{ subnet.status }}">{{ subnet.status }}</span></td>
+                  <td>{{ subnet.allocated_to or '—' }}</td>
+                  <td style="color:#6c757d">{{ subnet.purpose or '—' }}</td>
+                  <td>{% if subnet.environment %}<span class="badge badge-{{ subnet.environment }}">{{ subnet.environment }}</span>{% else %}—{% endif %}</td>
+                  <td>{{ subnet.service or '—' }}</td>
+                  <td>
+                    {% if subnet.ip_addresses %}
+                      <span style="font-size:12px;color:#0078d4">{{ subnet.ip_addresses|length }} assigned</span>
+                    {% else %}
+                      <span style="color:#6c757d;font-size:12px">none</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <div style="display:flex;gap:4px">
+                      <a href="{{ url_for('main.edit_subnet', id=subnet.id) }}" class="btn btn-secondary btn-sm">Edit</a>
+                      <a href="{{ url_for('main.add_ip') }}" class="btn btn-secondary btn-sm">+ IP</a>
+                      <form method="POST" action="{{ url_for('main.delete_subnet', id=subnet.id) }}" style="display:inline" onsubmit="return confirm('Remove this subnet?')">
+                        <button class="btn btn-danger btn-sm">Remove</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                {% if subnet.ip_addresses %}
+                <tr>
+                  <td colspan="8" style="padding:0;background:#f8f9fa">
+                    <div style="padding:.5rem 1.25rem">
+                      <table style="font-size:12px">
+                        <thead>
+                          <tr>
+                            <th>IP Address</th>
+                            <th>Service</th>
+                            <th>Description</th>
+                            <th></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for ip in subnet.ip_addresses %}
+                          <tr>
+                            <td class="mono">{{ ip.address }}</td>
+                            <td>{{ ip.service_name }}</td>
+                            <td style="color:#6c757d">{{ ip.description or '—' }}</td>
+                            <td>
+                              <form method="POST" action="{{ url_for('main.delete_ip', id=ip.id) }}" style="display:inline" onsubmit="return confirm('Remove this IP?')">
+                                <button class="btn btn-danger btn-sm">Remove</button>
+                              </form>
+                            </td>
+                          </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+              </tbody>
+            </table>
+            {% else %}
+            <div style="padding:1.5rem;text-align:center;color:#6c757d;font-size:13px">
+              No subnets yet — <a href="{{ url_for('main.add_subnet') }}">add one</a>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+      <div style="padding:1.5rem;text-align:center;color:#6c757d;font-size:13px">
+        No VNets yet — <a href="{{ url_for('main.add_vnet') }}">add one</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+{% else %}
+<div class="card">
+  <div class="card-body" style="text-align:center;padding:3rem;color:#6c757d">
+    No address spaces yet. <a href="{{ url_for('main.add_address_space') }}">Add your first one</a> to get started.
+  </div>
+</div>
+{% endif %}
+
+<div class="section-title" style="margin-top:1.5rem">Internal Static IPs</div>
+<div class="card">
+  <div class="card-header">
+    <div class="card-title">IP to service mappings</div>
+    <a href="{{ url_for('main.add_ip') }}" class="btn btn-primary btn-sm">+ Add IP</a>
+  </div>
+  {% if ip_addresses %}
+  <table>
+    <thead>
+      <tr>
+        <th>IP Address</th>
+        <th>Service</th>
+        <th>Subnet</th>
+        <th>Description</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ip in ip_addresses %}
+      <tr>
+        <td class="mono">{{ ip.address }}</td>
+        <td><strong>{{ ip.service_name }}</strong></td>
+        <td class="mono" style="color:#6c757d">{{ ip.subnet.name }} ({{ ip.subnet.cidr }})</td>
+        <td style="color:#6c757d">{{ ip.description or '—' }}</td>
+        <td>
+          <form method="POST" action="{{ url_for('main.delete_ip', id=ip.id) }}" style="display:inline" onsubmit="return confirm('Remove this IP?')">
+            <button class="btn btn-danger btn-sm">Remove</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="card-body" style="text-align:center;color:#6c757d">
+    No internal IPs yet. <a href="{{ url_for('main.add_ip') }}">Add one</a>.
+  </div>
+  {% endif %}
+</div>
+
+<div class="section-title" style="margin-top:1.5rem">Firewall External IPs</div>
+<div class="card">
+  <div class="card-header">
+    <div class="card-title">Public IP reference</div>
+    <a href="{{ url_for('main.add_firewall_ip') }}" class="btn btn-primary btn-sm">+ Add IP</a>
+  </div>
+  {% if firewall_ips %}
+  <table>
+    <thead>
+      <tr>
+        <th>Public IP</th>
+        <th>Label</th>
+        <th>Mapped to</th>
+        <th>Rule reference</th>
+        <th>Notes</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for fip in firewall_ips %}
+      <tr>
+        <td class="mono">{{ fip.public_ip }}</td>
+        <td><strong>{{ fip.label }}</strong></td>
+        <td>{{ fip.mapped_to_service or '—' }}</td>
+        <td class="mono" style="color:#6c757d">{{ fip.firewall_rule_ref or '—' }}</td>
+        <td style="color:#6c757d">{{ fip.notes or '—' }}</td>
+        <td>
+          <form method="POST" action="{{ url_for('main.delete_firewall_ip', id=fip.id) }}" style="display:inline" onsubmit="return confirm('Remove this firewall IP?')">
+            <button class="btn btn-danger btn-sm">Remove</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="card-body" style="text-align:center;color:#6c757d">
+    No firewall IPs yet. <a href="{{ url_for('main.add_firewall_ip') }}">Add one</a>.
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}
