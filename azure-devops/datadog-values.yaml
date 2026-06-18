@@ -1,0 +1,15 @@
+datadog:
+  site: datadoghq.eu
+  logs:
+    enabled: true
+    containerCollectAll: true
+  networkMonitoring:
+    enabled: true
+  kubelet:
+    tlsVerify: false
+  # logLevel: INFO
+  clusterName: "aks-opra-dev-ne"
+
+providers:
+  aks:
+    enabled: true

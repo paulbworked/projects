@@ -1,0 +1,63 @@
+trigger:
+  branches:
+    include:
+    - main
+stages:
+- stage: __default
+  jobs:
+  - job: Job
+    pool:
+      name: "OPRA Linux Build Agent Scale Set GF"
+    steps:
+    - task: CmdLine@2
+      displayName: Add Traefik Helm repository
+      inputs:
+        script: |
+          helm repo add traefik https://traefik.github.io/charts
+          helm repo update
+    - task: 6d15af64-176c-496d-b583-fd2ae21d4df4@1
+      condition: false
+      inputs:
+        repository: none
+    - task: file-creator@7
+      displayName: Create Helm Value File
+      inputs:
+        filepath: '$(System.ArtifactsDirectory)/traefik-values.yaml'
+        fileoverwrite: true
+        filecontent: |2
+
+          deployment:
+            replicas: 2
+
+          nodeSelector:
+            kubernetes.io/os: linux
+
+          service:
+            annotations:
+              service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+              service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: "/"
+
+          additionalArguments: []
+    - task: Bash@3
+      displayName: 'Login to AKS'
+      inputs:
+        targetType: inline
+        script: |
+          echo  "##[command]az login --identity"
+          az login --identity
+
+          echo "##[command]az account set --name $(azure-subscription-name)"
+          az account set --name "OPRA - Unqualified"
+
+          echo  "##[command]az aks get-credentials --resource-group rg-opra-$(techstack)-$(azure-location-code)-aks --name aks-opra-$(techstack)-$(azure-location-code) --overwrite-existing"
+          az aks get-credentials --resource-group rg-opra-dev-ne-aks --name aks-opra-dev-ne --overwrite-existing
+    - task: CmdLine@2
+      displayName: Helm Upgrade
+      inputs:
+        script: |
+          echo  "##[command]kubelogin convert-kubeconfig -l msi"
+          kubelogin convert-kubeconfig -l msi
+
+          helm upgrade --install traefik traefik/traefik --namespace traefik --create-namespace -f traefik-values.yaml
+        workingDirectory: '$(System.ArtifactsDirectory)'
+
