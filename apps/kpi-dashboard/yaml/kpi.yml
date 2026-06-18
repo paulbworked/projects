@@ -1,0 +1,23 @@
+trigger:
+  enabled: false
+stages:
+- stage: __default
+  jobs:
+  - job: Job
+    pool:
+      name: Example Linux Build Agent Scale Set
+    steps:
+    - task: ArchiveFiles@2
+      displayName: Zip app code
+      inputs:
+        rootFolderOrFile: $(System.DefaultWorkingDirectory)
+        includeRootFolder: false
+        archiveFile: $(Build.ArtifactStagingDirectory)/app.zip
+    - task: AzureWebApp@1
+      displayName: Deploy to App Service
+      inputs:
+        azureSubscription: example-ops-service
+        appName: app-infrahealth-ops
+        appType: webAppLinux
+        package: $(Build.ArtifactStagingDirectory)/app.zip
+
