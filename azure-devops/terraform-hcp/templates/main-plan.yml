@@ -1,0 +1,94 @@
+parameters:
+  - name: workspaceId
+    type: string
+  - name: workspaceName
+    type: string
+
+jobs:
+  - job: TerraformPlan
+    pool:
+      vmImage: ubuntu-latest
+
+    steps:
+      - task: Bash@3
+        displayName: Trigger HCP Terraform Plan Run
+        inputs:
+          targetType: inline
+          script: |
+            RESPONSE=$(curl -s \
+              --header "Authorization: Bearer $(TFC_TOKEN)" \
+              --header "Content-Type: application/vnd.api+json" \
+              --request POST \
+              --data '{
+                "data": {
+                  "attributes": {
+                    "message": "Azure DevOps - Scheduled Plan-Only Run",
+                    "plan-only": true
+                  },
+                  "type": "runs",
+                  "relationships": {
+                    "workspace": {
+                      "data": {
+                        "type": "workspaces",
+                        "id": "${{ parameters.workspaceId }}"
+                      }
+                    }
+                  }
+                }
+              }' \
+              https://app.terraform.io/api/v2/runs)
+
+            RUN_ID=$(echo $RESPONSE | jq -r '.data.id')
+            echo "##vso[task.setvariable variable=RUN_ID]$RUN_ID"
+
+      - task: Bash@3
+        displayName: Wait for Plan to Complete
+        inputs:
+          targetType: inline
+          script: |
+            echo "Waiting for run $(RUN_ID) to complete..."
+
+            for i in $(seq 1 30); do
+              STATUS=$(curl -s \
+                --header "Authorization: Bearer $(TFC_TOKEN)" \
+                --header "Content-Type: application/vnd.api+json" \
+                https://app.terraform.io/api/v2/runs/$(RUN_ID) \
+                | jq -r '.data.attributes.status')
+
+              echo "Current status: $STATUS"
+
+              if [[ "$STATUS" == "planned_and_finished" || "$STATUS" == "errored" || "$STATUS" == "canceled" ]]; then
+                echo "Run reached terminal state: $STATUS"
+                break
+              fi
+
+              echo "Not finished yet, retrying in 10 seconds... ($i/30)"
+              sleep 10
+            done
+
+      - task: Bash@3
+        displayName: Check Plan for Changes
+        inputs:
+          targetType: inline
+          script: |
+            RESPONSE=$(curl -s \
+              --header "Authorization: Bearer $(TFC_TOKEN)" \
+              --header "Content-Type: application/vnd.api+json" \
+              https://app.terraform.io/api/v2/runs/$(RUN_ID))
+
+            HAS_CHANGES=$(echo $RESPONSE | jq -r '.data.attributes."has-changes"')
+
+            echo "Has changes: $HAS_CHANGES"
+
+            if [ "$HAS_CHANGES" == "true" ]; then
+              RUN_URL="https://app.terraform.io/app/triumph-research-intelligence/workspaces/${{ parameters.workspaceName }}/runs/$(RUN_ID)"
+
+              echo "##vso[task.logissue type=warning]Plan detected infrastructure changes! Review required."
+              echo ""
+              echo "Run URL: $RUN_URL"
+
+              exit 1
+            else
+              echo "No changes detected. Plan is clean."
+              exit 0
+            fi

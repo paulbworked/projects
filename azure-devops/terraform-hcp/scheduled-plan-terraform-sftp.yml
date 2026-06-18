@@ -1,0 +1,18 @@
+trigger:
+- none
+
+schedules:
+  - cron: '0 16 * * 0'
+    displayName: Weekly Plan for Workspace terraform-sftp
+    branches:
+      include: [main]
+    always: true
+
+variables:
+  - group: terraform-hcp-library
+
+extends:
+  template: templates/main-plan.yml
+  parameters:
+    workspaceId: 'ws-rPDCzpcGB9LFdExw'
+    workspaceName: 'terraform-sftp'

@@ -1,0 +1,18 @@
+trigger:
+- none
+
+schedules:
+  - cron: '30 11 * * 0'
+    displayName: Weekly Plan for Workspace terraform-poc
+    branches:
+      include: [main]
+    always: true
+
+variables:
+  - group: terraform-hcp-library
+
+extends:
+  template: templates/main-plan.yml
+  parameters:
+    workspaceId: 'ws-5KuJjaNf3498AzcD'
+    workspaceName: 'terraform-poc'

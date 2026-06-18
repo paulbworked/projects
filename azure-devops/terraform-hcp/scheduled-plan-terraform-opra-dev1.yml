@@ -1,0 +1,18 @@
+trigger:
+- none
+
+schedules:
+  - cron: '30 16 * * 6'
+    displayName: Weekly Plan for Workspace terraform-opra-dev1
+    branches:
+      include: [main]
+    always: true
+
+variables:
+  - group: terraform-hcp-library
+
+extends:
+  template: templates/main-plan.yml
+  parameters:
+    workspaceId: 'ws-DTuK1njJZUYCAFMc'
+    workspaceName: 'terraform-opra-dev1'
