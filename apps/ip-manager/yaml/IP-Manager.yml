@@ -1,0 +1,32 @@
+trigger:
+  enabled: false
+stages:
+- stage: __default
+  jobs:
+  - job: Job
+    pool:
+      name: Example Linux Build Agent Scale Set
+    steps:
+    - task: CmdLine@2
+      displayName: Install dependencies
+      inputs:
+        script: |
+          python3 --version
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+    - task: ArchiveFiles@2
+      displayName: Zip app code
+      inputs:
+        rootFolderOrFile: $(System.DefaultWorkingDirectory)
+        includeRootFolder: false
+        archiveFile: $(Build.ArtifactStagingDirectory)/app.zip
+    - task: AzureWebApp@1
+      displayName: Deploy to App Service
+      inputs:
+        azureSubscription: example-ops-service
+        appName: app-ipmanager-ops
+        appType: webAppLinux
+        package: $(Build.ArtifactStagingDirectory)/app.zip
+
