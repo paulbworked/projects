@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Infrastructure Health Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f4f3ef;
+    --surface: #ffffff;
+    --surface2: #f9f8f5;
+    --border: #e8e6e0;
+    --text: #1a1917;
+    --text2: #6b6860;
+    --text3: #9c9a94;
+    --green: #2d7a4f;
+    --green-bg: #edf7f2;
+    --amber: #b45309;
+    --amber-bg: #fef3e2;
+    --red: #c0392b;
+    --red-bg: #fdf0ee;
+    --blue: #1d4ed8;
+    --blue-bg: #eff6ff;
+    --accent: #1a1917;
+    --nav-w: 220px;
+    --header-h: 56px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  .header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: var(--header-h);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    z-index: 100;
+  }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .logo-mark {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .logo-mark svg { width: 18px; height: 18px; fill: white; }
+  .header-title { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+
+  .month-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .month-btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    padding: 6px 12px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: none;
+    color: var(--text2);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.1s, color 0.1s;
+  }
+  .month-btn:hover { background: var(--bg); color: var(--text); }
+  .month-btn.active {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text);
+    font-weight: 600;
+  }
+  .month-btn.loading {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .btn-report {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 7px 16px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-report:hover { background: #333; }
+  .btn-report svg { width: 14px; height: 14px; }
+
+  /* ── Nav ── */
+  .nav {
+    position: fixed;
+    top: var(--header-h);
+    left: 0;
+    width: var(--nav-w);
+    bottom: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 16px 0;
+  }
+  .nav-section { padding: 0 12px; margin-bottom: 8px; }
+  .nav-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 8px 8px 4px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    border-radius: 7px;
+    cursor: pointer;
+    color: var(--text2);
+    font-size: 13px;
+    font-weight: 400;
+    transition: background 0.1s, color 0.1s;
+    text-decoration: none;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+  }
+  .nav-item:hover { background: var(--bg); color: var(--text); }
+  .nav-item.active { background: var(--bg); color: var(--text); font-weight: 500; }
+  .nav-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--border);
+  }
+  .nav-dot.green { background: var(--green); }
+  .nav-dot.amber { background: var(--amber); }
+  .nav-dot.red { background: var(--red); }
+  .nav-divider { height: 1px; background: var(--border); margin: 8px 12px; }
+
+  /* ── Main ── */
+  .main {
+    margin-left: var(--nav-w);
+    padding-top: var(--header-h);
+    min-height: 100vh;
+  }
+  .page { display: none; padding: 32px; max-width: 1100px; }
+  .page.active { display: block; }
+
+  /* ── Page header ── */
+  .page-header { margin-bottom: 28px; }
+  .page-header h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
+  .page-header p { color: var(--text2); font-size: 13px; margin-top: 4px; }
+
+  /* ── Section header ── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    margin-top: 32px;
+  }
+  .section-header:first-of-type { margin-top: 0; }
+  .section-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text2); }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 12px;
+  }
+  .card-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text3);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ── Metric grid ── */
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .metric-card {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .metric-label {
+    font-size: 11px;
+    color: var(--text3);
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .metric-value {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    font-family: 'DM Mono', monospace;
+  }
+  .metric-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  /* ── RAG badge ── */
+  .rag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+  .rag-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .rag.green { background: var(--green-bg); color: var(--green); }
+  .rag.green .rag-dot { background: var(--green); }
+  .rag.amber { background: var(--amber-bg); color: var(--amber); }
+  .rag.amber .rag-dot { background: var(--amber); }
+  .rag.red { background: var(--red-bg); color: var(--red); }
+  .rag.red .rag-dot { background: var(--red); }
+
+  /* ── Table ── */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text3);
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .data-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: var(--bg); }
+
+  /* ── Notes ── */
+  .notes-area {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  .notes-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text3);
+    margin-bottom: 8px;
+  }
+  .notes-textarea {
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    resize: vertical;
+    min-height: 80px;
+    outline: none;
+    transition: border-color 0.15s;
+    line-height: 1.6;
+  }
+  .notes-textarea:focus { border-color: var(--accent); background: var(--surface); }
+  .notes-save {
+    margin-top: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 14px;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    cursor: pointer;
+  }
+  .notes-save:hover { background: var(--bg); }
+  .notes-status { font-size: 11px; color: var(--green); margin-left: 8px; display: none; }
+
+  /* ── Loading skeleton ── */
+  .skeleton {
+    background: linear-gradient(90deg, var(--border) 25%, var(--bg) 50%, var(--border) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 6px;
+    height: 20px;
+  }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+  /* ── Free text fields (Upcoming Work) ── */
+  .freetext-card { margin-bottom: 12px; }
+  .freetext-title { font-size: 13px; font-weight: 500; margin-bottom: 8px; }
+
+  /* ── Executive summary RAG grid ── */
+  .exec-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+  }
+  .exec-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .exec-card-title { font-size: 12px; font-weight: 500; color: var(--text2); }
+  .exec-card-status { font-size: 13px; font-weight: 600; }
+
+  /* ── IP list ── */
+  .ip-list { list-style: none; }
+  .ip-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--bg);
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+  }
+  .ip-list li:last-child { border-bottom: none; }
+  .ip-count {
+    font-weight: 500;
+    color: var(--text2);
+    background: var(--surface2);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  /* ── Shard grid ── */
+  .shard-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .shard-card {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .shard-name { font-size: 11px; font-weight: 600; color: var(--text3); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .shard-stat { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; }
+  .shard-stat-label { color: var(--text2); }
+  .shard-stat-val { font-family: 'DM Mono', monospace; font-weight: 500; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  @media (max-width: 768px) {
+    .two-col { grid-template-columns: 1fr; }
+    .shard-grid { grid-template-columns: 1fr; }
+    .nav { display: none; }
+    .main { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <div class="logo-mark">
+      <svg viewBox="0 0 18 18"><rect x="2" y="2" width="6" height="6" rx="1.5"/><rect x="10" y="2" width="6" height="6" rx="1.5"/><rect x="2" y="10" width="6" height="6" rx="1.5"/><rect x="10" y="10" width="6" height="6" rx="1.5"/></svg>
+    </div>
+    <span class="header-title">Infrastructure Health</span>
+  </div>
+  <div class="header-right">
+    <nav class="month-nav" id="monthNav"></nav>
+    <button class="btn-report" onclick="generateReport()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 10v6m0 0l-3-3m3 3l3-3M3 15V7a2 2 0 012-2h9l5 5v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+      Generate report
+    </button>
+  </div>
+</header>
+
+<nav class="nav">
+  <div class="nav-section">
+    <div class="nav-label">Overview</div>
+    <button class="nav-item active" onclick="showPage('exec')">
+      <span class="nav-dot" id="dot-exec"></span>
+      Executive summary
+    </button>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Security</div>
+    <button class="nav-item" onclick="showPage('firewall')">
+      <span class="nav-dot" id="dot-firewall"></span>
+      Firewall
+    </button>
+    <button class="nav-item" onclick="showPage('cloudflare')">
+      <span class="nav-dot" id="dot-cloudflare"></span>
+      Cloudflare
+    </button>
+    <button class="nav-item" onclick="showPage('vulnerability')">
+      <span class="nav-dot" id="dot-vulnerability"></span>
+      Vulnerability scanning
+    </button>
+    <button class="nav-item" onclick="showPage('patching')">
+      <span class="nav-dot" id="dot-patching"></span>
+      Patching
+    </button>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Reliability &amp; Uptime</div>
+    <button class="nav-item" onclick="showPage('kubernetes')">
+      <span class="nav-dot" id="dot-kubernetes"></span>
+      Kubernetes
+    </button>
+    <button class="nav-item" onclick="showPage('mongodb')">
+      <span class="nav-dot" id="dot-mongodb"></span>
+      MongoDB
+    </button>
+    <button class="nav-item" onclick="showPage('postgresql')">
+      <span class="nav-dot" id="dot-postgresql"></span>
+      PostgreSQL
+    </button>
+    <button class="nav-item" onclick="showPage('servicebus')">
+      <span class="nav-dot" id="dot-servicebus"></span>
+      Service bus
+    </button>
+    <button class="nav-item" onclick="showPage('vms')">
+      <span class="nav-dot" id="dot-vms"></span>
+      Virtual machines
+    </button>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Upcoming work</div>
+    <button class="nav-item" onclick="showPage('upcoming')">
+      <span class="nav-dot"></span>
+      BAU &amp; projects
+    </button>
+  </div>
+</nav>
+
+<main class="main">
+
+  <!-- Executive Summary -->
+  <div class="page active" id="page-exec">
+    <div class="page-header">
+      <h1>Executive summary</h1>
+      <p id="exec-subtitle">Infrastructure health overview</p>
+    </div>
+    <div class="exec-grid" id="exec-grid">
+      <div class="exec-card"><div class="exec-card-title">Firewall</div><div class="exec-card-status" id="exec-firewall">Loading...</div></div>
+      <div class="exec-card"><div class="exec-card-title">Cloudflare</div><div class="exec-card-status" id="exec-cloudflare">Loading...</div></div>
+      <div class="exec-card"><div class="exec-card-title">Patching</div><div class="exec-card-status" id="exec-patching">Loading...</div></div>
+      <div class="exec-card"><div class="exec-card-title">Kubernetes</div><div class="exec-card-status" id="exec-kubernetes">Loading...</div></div>
+      <div class="exec-card"><div class="exec-card-title">MongoDB</div><div class="exec-card-status" id="exec-mongodb">Loading...</div></div>
+      <div class="exec-card"><div class="exec-card-title">PostgreSQL</div><div class="exec-card-status" id="exec-postgresql">Loading...</div></div>
+      <div class="exec-card"><div class="exec-card-title">Service bus</div><div class="exec-card-status" id="exec-servicebus">Loading...</div></div>
+      <div class="exec-card"><div class="exec-card-title">Virtual machines</div><div class="exec-card-status" id="exec-vms">Loading...</div></div>
+    </div>
+  </div>
+
+  <!-- Firewall -->
+  <div class="page" id="page-firewall">
+    <div class="page-header">
+      <h1>Firewall</h1>
+      <p>Azure Firewall &amp; Sentinel threat intelligence</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Threat intelligence</div>
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-label">Threat intel hits</div>
+          <div class="metric-value" id="fw-threat-hits">—</div>
+          <div class="metric-sub">Deny actions</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Denied connections</div>
+          <div class="metric-value" id="fw-denied-total">—</div>
+          <div class="metric-sub">Top IPs this month</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Security incidents</div>
+          <div class="metric-value" id="fw-incidents">—</div>
+          <div class="metric-sub">Sentinel</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Security alerts</div>
+          <div class="metric-value" id="fw-alerts">—</div>
+          <div class="metric-sub">Sentinel</div>
+        </div>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Top threat intel source IPs</div>
+        <ul class="ip-list" id="fw-threat-ips"></ul>
+      </div>
+      <div class="card">
+        <div class="card-title">Top denied IPs</div>
+        <ul class="ip-list" id="fw-denied-ips"></ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="notes-area">
+        <div class="notes-label">Notes</div>
+        <textarea class="notes-textarea" id="notes-security" placeholder="Add security notes for this month..."></textarea>
+        <button class="notes-save" onclick="saveNotes('security')">Save notes</button>
+        <span class="notes-status" id="notes-status-security">Saved</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cloudflare -->
+  <div class="page" id="page-cloudflare">
+    <div class="page-header">
+      <h1>Cloudflare</h1>
+      <p>WAF, DDoS and bot traffic</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Threat overview</div>
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-label">Total threats</div>
+          <div class="metric-value" id="cf-total-threats">—</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Bad host traffic</div>
+          <div class="metric-value" id="cf-badhost">—</div>
+          <div class="metric-sub">Requests</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Tor traffic</div>
+          <div class="metric-value" id="cf-tor">—</div>
+          <div class="metric-sub">Requests</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Top threat countries</div>
+      <table class="data-table">
+        <thead><tr><th>Country</th><th>Threats</th></tr></thead>
+        <tbody id="cf-countries"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Vulnerability Scanning -->
+  <div class="page" id="page-vulnerability">
+    <div class="page-header">
+      <h1>Vulnerability scanning</h1>
+      <p>Manual entry — scanning tool integration pending</p>
+    </div>
+    <div class="card">
+      <div class="freetext-title">Vulnerability scanning notes</div>
+      <textarea class="notes-textarea" id="notes-vulnerability" placeholder="Enter vulnerability scanning findings, tool results, or status update for this month..." style="min-height: 200px;"></textarea>
+      <button class="notes-save" onclick="saveNotes('vulnerability')" style="margin-top:8px">Save</button>
+      <span class="notes-status" id="notes-status-vulnerability">Saved</span>
+    </div>
+  </div>
+
+  <!-- Patching -->
+  <div class="page" id="page-patching">
+    <div class="page-header">
+      <h1>Patching</h1>
+      <p>Azure Update Manager — patch compliance across estate</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Compliance summary</div>
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-label">Compliance</div>
+          <div class="metric-value" id="patch-compliance">—</div>
+          <div class="metric-sub" id="patch-compliance-sub">—</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Total VMs</div>
+          <div class="metric-value" id="patch-total">—</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Compliant VMs</div>
+          <div class="metric-value" id="patch-compliant">—</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Patches applied</div>
+          <div class="metric-value" id="patch-applied">—</div>
+          <div class="metric-sub">This month</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Non-compliant VMs</div>
+      <table class="data-table">
+        <thead><tr><th>VM name</th><th>Critical</th><th>Security</th></tr></thead>
+        <tbody id="patch-noncompliant"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Kubernetes -->
+  <div class="page" id="page-kubernetes">
+    <div class="page-header">
+      <h1>Kubernetes</h1>
+      <p>AKS cluster — aks-pab-prod-ne</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Cluster health</div>
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-label">Nodes</div>
+          <div class="metric-value" id="k8s-nodes">—</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Container restarts</div>
+          <div class="metric-value" id="k8s-restarts">—</div>
+          <div class="metric-sub">Total this month</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Terminated containers</div>
+          <div class="metric-value" id="k8s-terminated">—</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Waiting containers</div>
+          <div class="metric-value" id="k8s-waiting">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="notes-area">
+        <div class="notes-label">Notes</div>
+        <textarea class="notes-textarea" id="notes-reliability" placeholder="Add reliability &amp; uptime notes for this month..."></textarea>
+        <button class="notes-save" onclick="saveNotes('reliability')">Save notes</button>
+        <span class="notes-status" id="notes-status-reliability">Saved</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MongoDB -->
+  <div class="page" id="page-mongodb">
+    <div class="page-header">
+      <h1>MongoDB</h1>
+      <p>Atlas replica set — pab-prod</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Shard overview</div>
+      <div class="shard-grid" id="mongo-shards"></div>
+    </div>
+  </div>
+
+  <!-- PostgreSQL -->
+  <div class="page" id="page-postgresql">
+    <div class="page-header">
+      <h1>PostgreSQL</h1>
+      <p>psql-pab-prod-ne — Flexible Server</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Database health</div>
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-label">Avg connections</div>
+          <div class="metric-value" id="pg-connections">—</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Storage used</div>
+          <div class="metric-value" id="pg-storage">—</div>
+          <div class="metric-sub">GB</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Service Bus -->
+  <div class="page" id="page-servicebus">
+    <div class="page-header">
+      <h1>Service bus</h1>
+      <p>sbns-pab-prod-ne</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Message throughput</div>
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-label">Incoming messages</div>
+          <div class="metric-value" id="sb-incoming">—</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Outgoing messages</div>
+          <div class="metric-value" id="sb-outgoing">—</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Dead lettered (avg)</div>
+          <div class="metric-value" id="sb-deadletter">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Virtual Machines -->
+  <div class="page" id="page-vms">
+    <div class="page-header">
+      <h1>Virtual machines</h1>
+      <p>vmopraprodne</p>
+    </div>
+    <div class="card">
+      <div class="card-title">VM health</div>
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-label">Availability</div>
+          <div class="metric-value" id="vm-availability">—</div>
+          <div class="metric-sub">%</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Avg CPU</div>
+          <div class="metric-value" id="vm-cpu">—</div>
+          <div class="metric-sub">%</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Disk read</div>
+          <div class="metric-value" id="vm-disk">—</div>
+          <div class="metric-sub">bytes/sec avg</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upcoming Work -->
+  <div class="page" id="page-upcoming">
+    <div class="page-header">
+      <h1>Upcoming work</h1>
+      <p>BAU and project pipeline</p>
+    </div>
+    <div class="section-header"><span class="section-title">BAU</span></div>
+    <div class="card freetext-card">
+      <div class="freetext-title">Scheduled maintenance</div>
+      <textarea class="notes-textarea" id="notes-upcoming-scheduled-maintenance" placeholder="List scheduled maintenance windows, patch cycles, planned downtime..." style="min-height: 120px;"></textarea>
+      <button class="notes-save" onclick="saveNotes('upcoming-scheduled-maintenance')" style="margin-top:8px">Save</button>
+      <span class="notes-status" id="notes-status-upcoming-scheduled-maintenance">Saved</span>
+    </div>
+    <div class="card freetext-card">
+      <div class="freetext-title">Ongoing operational tasks</div>
+      <textarea class="notes-textarea" id="notes-upcoming-operational-tasks" placeholder="List ongoing BAU tasks, monitoring activities, operational work in progress..." style="min-height: 120px;"></textarea>
+      <button class="notes-save" onclick="saveNotes('upcoming-operational-tasks')" style="margin-top:8px">Save</button>
+      <span class="notes-status" id="notes-status-upcoming-operational-tasks">Saved</span>
+    </div>
+    <div class="section-header"><span class="section-title">Projects</span></div>
+    <div class="card freetext-card">
+      <div class="freetext-title">Projects</div>
+      <textarea class="notes-textarea" id="notes-upcoming-projects" placeholder="List active and upcoming projects, milestones, delivery dates..." style="min-height: 160px;"></textarea>
+      <button class="notes-save" onclick="saveNotes('upcoming-projects')" style="margin-top:8px">Save</button>
+      <span class="notes-status" id="notes-status-upcoming-projects">Saved</span>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const API_BASE = '';
+let currentOffset = 0;
+let allData = {};
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+function getMonthLabel(offset) {
+  const now = new Date();
+  now.setMonth(now.getMonth() + offset);
+  return now.toLocaleString('default', { month: 'long', year: 'numeric' });
+}
+
+function fmt(val, decimals = 0) {
+  if (val === null || val === undefined) return '—';
+  return Number(val).toFixed(decimals);
+}
+
+function ragClass(val, greenMax, amberMax) {
+  if (val === null || val === undefined) return '';
+  if (val <= greenMax) return 'green';
+  if (val <= amberMax) return 'amber';
+  return 'red';
+}
+
+function setDot(id, cls) {
+  const el = document.getElementById('dot-' + id);
+  if (el) { el.className = 'nav-dot ' + cls; }
+}
+
+function setExecStatus(id, text, cls) {
+  const el = document.getElementById('exec-' + id);
+  if (el) {
+    el.innerHTML = `<span class="rag ${cls}"><span class="rag-dot"></span>${text}</span>`;
+  }
+}
+
+async function fetchAll(offset) {
+  currentOffset = offset;
+  setMonthLoading(true);
+  const q = `?month_offset=${offset}`;
+  const endpoints = ['security', 'cloudflare', 'patching', 'kubernetes', 'mongodb', 'postgresql', 'servicebus', 'virtualmachines'];
+  const results = await Promise.allSettled(endpoints.map(e => fetch(`${API_BASE}/api/${e}${q}`).then(r => r.json())));
+  results.forEach((r, i) => {
+    if (r.status === 'fulfilled') allData[endpoints[i]] = r.value;
+  });
+  await loadAllNotes(offset);
+  setMonthLoading(false);
+  render();
+}
+
+async function loadAllNotes(offset) {
+  const sections = ['security', 'reliability', 'vulnerability', 'upcoming-scheduled-maintenance', 'upcoming-operational-tasks', 'upcoming-projects'];
+  const results = await Promise.allSettled(sections.map(s => fetch(`${API_BASE}/api/notes/${s}?month_offset=${offset}`).then(r => r.json())));
+  results.forEach((r, i) => {
+    if (r.status === 'fulfilled') {
+      const el = document.getElementById('notes-' + sections[i]);
+      if (el) el.value = r.value.content || '';
+    }
+  });
+}
+
+async function saveNotes(section) {
+  const el = document.getElementById('notes-' + section);
+  const statusEl = document.getElementById('notes-status-' + section);
+  if (!el) return;
+  await fetch(`${API_BASE}/api/notes/${section}?month_offset=${currentOffset}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content: el.value })
+  });
+  statusEl.style.display = 'inline';
+  setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
+}
+
+function render() {
+  renderSecurity();
+  renderCloudflare();
+  renderPatching();
+  renderKubernetes();
+  renderMongoDB();
+  renderPostgreSQL();
+  renderServiceBus();
+  renderVMs();
+}
+
+function renderSecurity() {
+  const d = allData.security;
+  if (!d) return;
+  const s = d.security;
+
+  const hits = s.threat_intel_hits?.[0]?.total_hits || 0;
+  const deniedTotal = s.top_denied_ips?.reduce((a, b) => a + (b.count_ || 0), 0) || 0;
+  const incidents = s.incidents_by_severity?.length || 0;
+  const alerts = s.alerts_by_severity?.length || 0;
+
+  document.getElementById('fw-threat-hits').textContent = fmt(hits);
+  document.getElementById('fw-denied-total').textContent = deniedTotal.toLocaleString();
+  document.getElementById('fw-incidents').textContent = incidents === 0 ? '0' : incidents;
+  document.getElementById('fw-alerts').textContent = alerts === 0 ? '0' : alerts;
+
+  const threatIpsList = document.getElementById('fw-threat-ips');
+  threatIpsList.innerHTML = '';
+  (s.top_threat_intel_ips || []).slice(0, 8).forEach(ip => {
+    const li = document.createElement('li');
+    li.innerHTML = `<span>${ip.SourceIp}</span><span class="ip-count">${ip.count_}</span>`;
+    threatIpsList.appendChild(li);
+  });
+
+  const deniedIpsList = document.getElementById('fw-denied-ips');
+  deniedIpsList.innerHTML = '';
+  (s.top_denied_ips || []).slice(0, 8).forEach(ip => {
+    const li = document.createElement('li');
+    li.innerHTML = `<span>${ip.SourceIp}</span><span class="ip-count">${(ip.count_ || 0).toLocaleString()}</span>`;
+    deniedIpsList.appendChild(li);
+  });
+
+  const fwStatus = incidents > 0 ? 'red' : hits > 5 ? 'amber' : 'green';
+  const fwLabel = incidents > 0 ? 'Incidents open' : hits > 5 ? 'Elevated threats' : 'Healthy';
+  setDot('firewall', fwStatus);
+  setExecStatus('firewall', fwLabel, fwStatus);
+}
+
+function renderCloudflare() {
+  const d = allData.cloudflare;
+  if (!d) return;
+  const c = d.cloudflare;
+
+  document.getElementById('cf-total-threats').textContent = fmt(c.total_threats);
+  document.getElementById('cf-badhost').textContent = fmt(c.bot_traffic?.badhost);
+  document.getElementById('cf-tor').textContent = fmt(c.bot_traffic?.tor);
+
+  const tbody = document.getElementById('cf-countries');
+  tbody.innerHTML = '';
+  (c.top_threat_countries || []).forEach(row => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${row.country}</td><td>${(row.threats || 0).toLocaleString()}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  const threats = c.total_threats || 0;
+  const cfStatus = threats === 0 ? 'green' : threats <= 100 ? 'amber' : 'red';
+  const cfLabel = threats === 0 ? 'No threats' : threats <= 100 ? 'Low threats' : 'Elevated';
+  setDot('cloudflare', cfStatus);
+  setExecStatus('cloudflare', cfLabel, cfStatus);
+}
+
+function renderPatching() {
+  const d = allData.patching;
+  if (!d) return;
+  const p = d.patching;
+  const s = p.compliance_summary || {};
+
+  const pct = s.compliancePercent || 0;
+  document.getElementById('patch-compliance').textContent = pct + '%';
+  document.getElementById('patch-compliance-sub').textContent = `${s.compliantVMs || 0} of ${s.totalVMs || 0} VMs`;
+  document.getElementById('patch-total').textContent = s.totalVMs || '—';
+  document.getElementById('patch-compliant').textContent = s.compliantVMs || '—';
+  document.getElementById('patch-applied').textContent = p.patches_applied_this_month?.totalInstalled || 0;
+
+  const tbody = document.getElementById('patch-noncompliant');
+  tbody.innerHTML = '';
+  const vms = p.non_compliant_vms || [];
+  if (vms.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="3" style="color:var(--text3);text-align:center;padding:16px">All VMs compliant</td></tr>';
+  } else {
+    vms.forEach(vm => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${vm.resourceName}</td><td>${vm.critical || 0}</td><td>${vm.security || 0}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  const patchStatus = pct >= 100 ? 'green' : pct >= 80 ? 'amber' : 'red';
+  const patchLabel = pct >= 100 ? '100% compliant' : pct + '% compliant';
+  setDot('patching', patchStatus);
+  setExecStatus('patching', patchLabel, patchStatus);
+}
+
+function renderKubernetes() {
+  const d = allData.kubernetes;
+  if (!d) return;
+  const k = d.kubernetes;
+
+  document.getElementById('k8s-nodes').textContent = fmt(k.node_count_latest);
+  document.getElementById('k8s-restarts').textContent = fmt(k.container_restarts_total, 0);
+  document.getElementById('k8s-terminated').textContent = fmt(k.containers_terminated_total, 0);
+  document.getElementById('k8s-waiting').textContent = fmt(k.containers_waiting_total, 0);
+
+  const restarts = k.container_restarts_total || 0;
+  const k8sStatus = restarts === 0 ? 'green' : restarts <= 5 ? 'amber' : 'red';
+  const k8sLabel = restarts === 0 ? 'Healthy' : restarts + ' restarts';
+  setDot('kubernetes', k8sStatus);
+  setExecStatus('kubernetes', k8sLabel, k8sStatus);
+}
+
+function renderMongoDB() {
+  const d = allData.mongodb;
+  if (!d) return;
+  const shards = d.mongodb;
+
+  const container = document.getElementById('mongo-shards');
+  container.innerHTML = '';
+  let overallHealth = 'green';
+
+  Object.entries(shards).forEach(([name, s]) => {
+    const health = s.replication_health;
+    const lag = s.replication_lag_avg_seconds || 0;
+    if (health !== 1 || lag > 5) overallHealth = 'red';
+    else if (lag > 1 && overallHealth !== 'red') overallHealth = 'amber';
+
+    const div = document.createElement('div');
+    div.className = 'shard-card';
+    div.innerHTML = `
+      <div class="shard-name">${name}</div>
+      <div class="shard-stat"><span class="shard-stat-label">Connections (avg)</span><span class="shard-stat-val">${fmt(s.connections_avg, 0)}</span></div>
+      <div class="shard-stat"><span class="shard-stat-label">Disk used</span><span class="shard-stat-val">${fmt(s.disk_used_latest_gb, 1)} GB</span></div>
+      <div class="shard-stat"><span class="shard-stat-label">IOPS (avg)</span><span class="shard-stat-val">${fmt(s.disk_iops_avg, 1)}</span></div>
+      <div class="shard-stat"><span class="shard-stat-label">Repl health</span><span class="shard-stat-val">${health === 1 ? '✓' : '✗'}</span></div>
+      <div class="shard-stat"><span class="shard-stat-label">Repl lag (avg)</span><span class="shard-stat-val">${fmt(s.replication_lag_avg_seconds, 3)}s</span></div>
+    `;
+    container.appendChild(div);
+  });
+
+  setDot('mongodb', overallHealth);
+  setExecStatus('mongodb', overallHealth === 'green' ? 'Healthy' : overallHealth === 'amber' ? 'Degraded' : 'Issue detected', overallHealth);
+}
+
+function renderPostgreSQL() {
+  const d = allData.postgresql;
+  if (!d) return;
+  const p = d.postgresql;
+
+  document.getElementById('pg-connections').textContent = fmt(p.connections_avg, 0);
+  document.getElementById('pg-storage').textContent = fmt(p.storage_used_latest_gb, 1);
+
+  setDot('postgresql', 'green');
+  setExecStatus('postgresql', 'Healthy', 'green');
+}
+
+function renderServiceBus() {
+  const d = allData.servicebus;
+  if (!d) return;
+  const s = d.servicebus;
+
+  document.getElementById('sb-incoming').textContent = fmt(s.incoming_messages_total, 0);
+  document.getElementById('sb-outgoing').textContent = fmt(s.outgoing_messages_total, 0);
+  const dl = s.dead_lettered_messages_avg;
+  document.getElementById('sb-deadletter').textContent = dl === null ? '0' : fmt(dl, 1);
+
+  const dlVal = dl || 0;
+  const sbStatus = dlVal === 0 ? 'green' : dlVal <= 10 ? 'amber' : 'red';
+  setDot('servicebus', sbStatus);
+  setExecStatus('servicebus', sbStatus === 'green' ? 'Healthy' : 'Dead letters', sbStatus);
+}
+
+function renderVMs() {
+  const d = allData.virtualmachines;
+  if (!d) return;
+  const v = d.virtual_machines;
+
+  document.getElementById('vm-availability').textContent = fmt(v.availability_avg_percent, 2);
+  document.getElementById('vm-cpu').textContent = fmt(v.cpu_avg_percent, 1);
+  document.getElementById('vm-disk').textContent = (v.disk_read_avg_bytes_sec || 0).toLocaleString();
+
+  const avail = v.availability_avg_percent || 0;
+  const vmStatus = avail >= 100 ? 'green' : avail >= 99 ? 'amber' : 'red';
+  setDot('vms', vmStatus);
+  setExecStatus('vms', avail + '% availability', vmStatus);
+}
+
+function generateReport() {
+  const btn = document.querySelector('.btn-report');
+  const original = btn.innerHTML;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Generating...';
+  btn.disabled = true;
+  window.location.href = `${API_BASE}/api/report?month_offset=${currentOffset}`;
+  setTimeout(() => {
+    btn.innerHTML = original;
+    btn.disabled = false;
+  }, 3000);
+}
+
+// Build month nav — current + previous 3
+function buildMonthNav() {
+  const nav = document.getElementById('monthNav');
+  nav.innerHTML = '';
+  const now = new Date();
+  for (let i = 0; i >= -3; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+    const label = d.toLocaleString('default', { month: 'long', year: 'numeric' });
+    const btn = document.createElement('button');
+    btn.className = 'month-btn' + (i === 0 ? ' active' : '');
+    btn.dataset.offset = i;
+    btn.textContent = label;
+    btn.addEventListener('click', function() {
+      if (this.classList.contains('active')) return;
+      allData = {};
+      const offset = parseInt(this.dataset.offset);
+      setActiveMonth(offset);
+      fetchAll(offset);
+    });
+    nav.appendChild(btn);
+  }
+}
+
+function setActiveMonth(offset) {
+  document.querySelectorAll('.month-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.offset) === offset);
+  });
+}
+
+function setMonthLoading(loading) {
+  document.querySelectorAll('.month-btn').forEach(b => {
+    b.classList.toggle('loading', loading && !b.classList.contains('active'));
+  });
+}
+
+buildMonthNav();
+
+fetchAll(0);
+</script>
+</body>
+</html>
